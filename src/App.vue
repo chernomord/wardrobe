@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <img class="logo" src="./assets/logo.png">
     <wardrobe></wardrobe>
   </div>
 </template>
