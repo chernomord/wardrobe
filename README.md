@@ -2,6 +2,8 @@
 
 > Wardrobe random generator and suggestions service
 
+[Live Demo](https://chernomord.github.io/wardrobe/)
+
 ## Build Setup
 
 ``` bash
