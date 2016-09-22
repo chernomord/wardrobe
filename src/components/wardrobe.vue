@@ -1,39 +1,28 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
+    <template v-if="wardrobe.hasOwnProperty('top')">
+      <p>Всего вещей: {{calcItems(wardrobe)}}, аксессуаров: {{calcItems(accessories)}}</p>
+    </template>
     <div>
-      <button class="btn btn-primary" v-on:click="loadWD()" v-if="wardrobe === 'empty'">Загрузить гардероб</button>
+      <button class="btn btn-primary" v-on:click="loadWardrobe()" v-if="wardrobe === 'empty'">Загрузить гардероб
+      </button>
     </div>
     <template v-if="wardrobe.hasOwnProperty('top')">
       <button class="btn btn-primary" v-on:click="generateLook()">Создать образ</button>
     </template>
-    <div v-if="look !== 'empty'">
-      <div class="container">
-        <h4>Размер фотографии: </h4>
-        <label class="radio-inline" v-for="num in ([120,180,240])">
-          <input type="radio" name="inlineRadioOptions" v-model="imgWidth" :value="num">{{num}}
-        </label>
-      </div>
-      <div class="wardrobe-item" v-for="(key, item) in look">
+    <div v-if="look.main !== 'empty'">
+      <div class="wardrobe-item" v-for="(key, item) in look.main">
         <img :src="'static/images/' + key + '/' + item" :width="imgWidth">
       </div>
     </div>
-        <template v-if="wardrobe.hasOwnProperty('top')">
-      <table class="table list">
-        <thead>
-        <tr>
-          <td>Группа</td>
-          <td>Всего шт.</td>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="(key, group) in wardrobe">
-          <td>{{key}}</td>
-          <td>{{group.length}}</td>
-        </tr>
-        </tbody>
-      </table>
-    </template>
+    <div v-if="look.accessories !== 'empty'">
+      <div class="wardrobe-item" v-for="(key, item) in look.accessories">
+        <img :src="'static/images/accessories/' + key + '/' + item" :width="imgWidth">
+      </div>
+      <hr>
+    </div>
+
   </div>
 </template>
 
@@ -43,14 +32,18 @@
     name: 'wardrobe',
 
     data: () => ({
-      imgWidth: 120,
+      imgWidth: 150,
       msg: 'Гардероб!',
       wardrobe: 'empty',
-      look: 'empty'
+      accessories: 'empty',
+      look: {
+        main: 'empty',
+        accessories: 'empty'
+      }
     }),
 
     methods: {
-      loadWD: function () {
+      loadWardrobe: function () {
         let x = new XMLHttpRequest()
         x.open('GET', 'static/wardrobe.json', true)
         x.send()
@@ -59,7 +52,10 @@
           if (x.status !== 200) {
             console.debug(x.status + ': ' + x.statusText) // исключение
           } else {
-            this.wardrobe = JSON.parse(x.responseText) // результат
+            let data = JSON.parse(x.responseText)
+            this.accessories = data.accessories
+            delete data.accessories
+            this.wardrobe = data
           }
         }
       },
@@ -71,7 +67,32 @@
             tempLook[val] = this.wardrobe[val][index]
           }
         })
-        this.look = tempLook
+        let accessories = {}
+        Object.getOwnPropertyNames(this.accessories).forEach(val => {
+          let decide = Math.random() - 0.5
+          if (decide && val !== '__ob__') {
+            let index = Math.round(Math.random() * (this.accessories[val].length - 1))
+            accessories[val] = this.accessories[val][index]
+          }
+        })
+        console.log(accessories)
+        this.look.main = tempLook
+        this.look.accessories = accessories
+      },
+      /**
+       * Calculate total items in arrays of dictionary properties
+       * @param input {object}
+       * @returns {number}
+       */
+      calcItems: function (input) {
+        let total = 0
+        if (input instanceof Object) {
+          Object.getOwnPropertyNames(input).forEach(val => {
+            console.log(val)
+            total = total + (input[val].length || 0)
+          })
+        }
+        return total
       }
     },
 
