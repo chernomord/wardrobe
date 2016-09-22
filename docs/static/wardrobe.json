@@ -1,4 +1,53 @@
 {
+  "accessories": {
+    "bag": [
+      "IMG_6992.jpg",
+      "IMG_6993.jpg",
+      "IMG_6994.jpg",
+      "IMG_6995.jpg",
+      "IMG_7019.jpg"
+    ],
+    "hat": [
+      "IMG_7013.jpg",
+      "IMG_7014.jpg",
+      "IMG_7020.jpg",
+      "IMG_7021.jpg"
+    ],
+    "scarf": [
+      "IMG_6980.jpg",
+      "IMG_7017.jpg",
+      "IMG_7022.jpg"
+    ],
+    "waistcoat": [
+      "IMG_6960.jpg",
+      "IMG_6973.jpg",
+      "IMG_6975.jpg",
+      "IMG_7000.jpg",
+      "IMG_7010.jpg",
+      "IMG_7011.jpg"
+    ]
+  },
+  "dress": [
+    "IMG_6972.jpg",
+    "IMG_6974.jpg",
+    "IMG_6989.jpg",
+    "IMG_6990.jpg",
+    "IMG_6996.jpg",
+    "IMG_7002.jpg",
+    "IMG_7003.jpg",
+    "IMG_7004.jpg",
+    "IMG_7005.jpg",
+    "IMG_7006.jpg",
+    "IMG_7007.jpg"
+  ],
+  "socks": [
+    "IMG_6983.jpg",
+    "IMG_6985.jpg"
+  ],
+  "shoes": [
+    "IMG_7008.jpg",
+    "IMG_7009.jpg"
+  ],
   "top": [
     "IMG_6963.jpg",
     "IMG_6965.jpg",
