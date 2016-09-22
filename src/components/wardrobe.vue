@@ -11,16 +11,17 @@
     <template v-if="wardrobe.hasOwnProperty('top')">
       <button class="btn btn-primary" v-on:click="generateLook()">Создать образ</button>
     </template>
-    <div v-if="look.main !== 'empty'">
-      <div class="wardrobe-item" v-for="(key, item) in look.main">
-        <img :src="'static/images/' + key + '/' + item" :width="imgWidth">
+    <div class="look">
+      <div class="look__main" v-if="look.main !== 'empty'">
+        <div class="wardrobe-item" v-for="(key, item) in look.main" v-bind:class="getClass(key)">
+          <img :src="'static/images/' + key + '/' + item" :width="imgWidth">
+        </div>
       </div>
-    </div>
-    <div v-if="look.accessories !== 'empty'">
-      <div class="wardrobe-item" v-for="(key, item) in look.accessories">
-        <img :src="'static/images/accessories/' + key + '/' + item" :width="imgWidth">
+      <div class="look__accessories" v-if="look.accessories !== 'empty'">
+        <div class="wardrobe-item" v-for="(key, item) in look.accessories">
+          <img :src="'static/images/accessories/' + key + '/' + item" :width="imgWidth">
+        </div>
       </div>
-      <hr>
     </div>
 
   </div>
@@ -93,7 +94,12 @@
           })
         }
         return total
-      }
+      },
+      /**
+       * Return name of the class
+       * @param name {string}
+       */
+      getClass: name => (name)
     },
 
     created: function () {
@@ -104,21 +110,67 @@
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-  h1 {
+<style scoped lang="stylus" rel="stylesheet/stylus">
+
+  $main-top-offset = 20px
+  $main-bot-offset = 220px
+
+  h1
     color: #42b983;
-  }
 
-  .list td:first-of-type {
-    text-align: left;
-  }
+  .list td
+    &:first-of-type
+      text-align: left;
+    &:last-of-type
+      text-align: right;
 
-  .list td:last-of-type {
-    text-align: right;
-  }
-
-  .wardrobe-item {
+  .wardrobe-item
     display: inline-block;
-    margin: 20px;
-  }
+    position: absolute;
+    left: 400px;
+    &.top
+      top: $main-top-offset
+      left: calc(12.5% - 75px);
+    &.dress
+      top: $main-top-offset
+      left: calc(37.5% - 75px);
+    &.sweater
+      top: $main-top-offset
+      left: calc(62.5% - 75px);
+    &.coat
+      top: $main-top-offset
+      left: calc(87.5% - 75px);
+    &.bottom
+      top: $main-top-offset + $main-bot-offset
+      left: calc(50% - 75px);
+      z-index: -1;
+    &.shoes
+      top: $main-top-offset + $main-bot-offset
+      left: calc(32% - 75px);
+      z-index: -1;
+      & img
+        width: 110px;
+    &.socks
+      top: $main-top-offset + $main-bot-offset
+      left: calc(75% - 75px);
+      z-index: -1;
+      & img
+        width: 110px;
+
+  .look__main
+    position: relative;
+    width: 600px;
+    height: 480px;
+    margin: 0 auto;
+
+  .look__accessories
+    position: relative;
+    margin: 0 auto;
+    & .wardrobe-item
+      position: relative;
+      display inline-block
+      left: initial;
+    & img
+      width 80px
+
 </style>
