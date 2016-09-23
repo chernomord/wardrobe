@@ -71,7 +71,7 @@
         let accessories = {}
         Object.getOwnPropertyNames(this.accessories).forEach(val => {
           let decide = Math.random() - 0.5
-          if (decide && val !== '__ob__') {
+          if (decide > 0 && val !== '__ob__') {
             let index = Math.round(Math.random() * (this.accessories[val].length - 1))
             accessories[val] = this.accessories[val][index]
           }

@@ -1,6 +1,6 @@
 {
   "name": "wardrobe",
-  "version": "1.0.0",
+  "version": "0.0.21",
   "description": "Wardrobe random generator and suggestions service",
   "author": "Slava <horlet@gmail.com>",
   "private": true,
