@@ -10,6 +10,7 @@
     </div>
     <template v-if="wardrobe.hasOwnProperty('top')">
       <button class="btn btn-primary" v-on:click="generateLook()">Создать образ</button>
+      <button class="btn btn-default" v-on:click="saveLook()">Сохранить</button>
     </template>
     <div class="look">
       <div class="look__main" v-if="look.main !== 'empty'">
@@ -22,6 +23,19 @@
           <img :src="'static/images/accessories/' + key + '/' + item" :width="imgWidth">
         </div>
       </div>
+    </div>
+    <div>
+      <h3>Сохраненные образы</h3>
+      <div class="btn-toolbar" style="text-align:center;">
+        <div class="btn-group" role="group" v-for="look in storedLooks">
+          <button type="button" class="btn btn-default btn-sm" v-on:click="loadLook($index)">#{{$index}}</button>
+          <button type="button" class="btn btn-warning btn-sm" v-on:click="deleteLook($index)">x</button>
+        </div>
+      </div>
+      <!--<button class="btn btn-default btn-sm" v-for="look in storedLooks" v-on:click="loadLook($index)">-->
+        <!--{{$index}}-->
+        <!--<a class="btn btn-default btn-xs">x</a>-->
+      <!--</button>-->
     </div>
 
   </div>
@@ -40,10 +54,54 @@
       look: {
         main: 'empty',
         accessories: 'empty'
-      }
+      },
+      storedLooks: []
     }),
 
+    ready: function () {
+      let storedLooks = window.localStorage.getItem('storedLooks')
+      if (storedLooks) {
+        storedLooks = JSON.parse(storedLooks)
+        this.storedLooks = storedLooks
+      }
+    },
+
     methods: {
+      saveLook: function () {
+        let noEqual = true
+        for (let i = 0; i < this.storedLooks.length; ++i) {
+          if (equals(this.storedLooks[i], this.look)) {
+            noEqual = false
+            break
+          }
+        }
+        if (this.look.main !== 'empty' && noEqual) {
+          this.storedLooks.push(this.look)
+          let lookToStore = JSON.stringify(this.storedLooks)
+          window.localStorage.setItem('storedLooks', lookToStore)
+        }
+        /**
+         *
+         * @param obj1 {object}
+         * @param obj2 {object}
+         * @returns {boolean}
+         */
+        function equals (obj1, obj2) {
+          let equal = false
+          if (JSON.stringify(obj1) === JSON.stringify(obj2)) equal = true
+          return equal
+        }
+      },
+
+      deleteLook: function (idx) {
+        this.storedLooks.splice(idx, 1)
+        window.localStorage.setItem('storedLooks', JSON.stringify(this.storedLooks))
+      },
+
+      loadLook: function (idx) {
+        this.look = JSON.parse(JSON.stringify(this['storedLooks'][idx]))
+      },
+
       loadWardrobe: function () {
         let x = new XMLHttpRequest()
         x.open('GET', 'static/wardrobe.json', true)
@@ -76,7 +134,6 @@
             accessories[val] = this.accessories[val][index]
           }
         })
-        console.log(accessories)
         this.look.main = tempLook
         this.look.accessories = accessories
       },
@@ -89,7 +146,6 @@
         let total = 0
         if (input instanceof Object) {
           Object.getOwnPropertyNames(input).forEach(val => {
-            console.log(val)
             total = total + (input[val].length || 0)
           })
         }

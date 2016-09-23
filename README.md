@@ -1,4 +1,4 @@
-# Wardrobbe
+# Wardrobe
 
 > Wardrobe random generator and suggestions service
 
