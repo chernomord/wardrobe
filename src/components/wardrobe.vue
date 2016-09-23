@@ -10,7 +10,7 @@
     </div>
     <template v-if="wardrobe.hasOwnProperty('top')">
       <button class="btn btn-primary" v-on:click="generateLook()">Создать образ</button>
-      <button class="btn btn-default" v-on:click="saveLook()">Сохранить</button>
+      <button class="btn btn-default" v-on:click="saveLook()" v-if="look.main !== 'empty'">Сохранить</button>
     </template>
     <div class="look">
       <div class="look__main" v-if="look.main !== 'empty'">
@@ -26,15 +26,15 @@
     </div>
     <div>
       <h3>Сохраненные образы</h3>
-      <div class="btn-toolbar" style="text-align:center;">
+      <div class="btn-toolbar saved-looks" style="text-align:center;">
         <div class="btn-group" role="group" v-for="look in storedLooks">
-          <button type="button" class="btn btn-default btn-sm" v-on:click="loadLook($index)">#{{$index}}</button>
-          <button type="button" class="btn btn-warning btn-sm" v-on:click="deleteLook($index)">x</button>
+          <button type="button" class="btn btn-default btn-sm" v-on:click="loadLook($index)">{{look.name}}</button>
+          <button type="button" class="btn btn-warning btn-sm" v-on:click="deleteLook($index)">✕</button>
         </div>
       </div>
       <!--<button class="btn btn-default btn-sm" v-for="look in storedLooks" v-on:click="loadLook($index)">-->
-        <!--{{$index}}-->
-        <!--<a class="btn btn-default btn-xs">x</a>-->
+      <!--{{$index}}-->
+      <!--<a class="btn btn-default btn-xs">x</a>-->
       <!--</button>-->
     </div>
 
@@ -68,28 +68,37 @@
 
     methods: {
       saveLook: function () {
-        let noEqual = true
-        for (let i = 0; i < this.storedLooks.length; ++i) {
-          if (equals(this.storedLooks[i], this.look)) {
-            noEqual = false
-            break
-          }
-        }
-        if (this.look.main !== 'empty' && noEqual) {
-          this.storedLooks.push(this.look)
-          let lookToStore = JSON.stringify(this.storedLooks)
-          window.localStorage.setItem('storedLooks', lookToStore)
-        }
         /**
          *
-         * @param obj1 {object}
-         * @param obj2 {object}
+         * @param look {Object}
+         * @param storedLooks {Array}
          * @returns {boolean}
          */
-        function equals (obj1, obj2) {
-          let equal = false
-          if (JSON.stringify(obj1) === JSON.stringify(obj2)) equal = true
-          return equal
+        const noEquals = (look, storedLooks) => {
+          let noEqual = true
+          for (let i = 0; i < this.storedLooks.length; ++i) {
+            if (JSON.stringify(storedLooks[i].look) === JSON.stringify(look)) {
+              noEqual = false
+              break
+            }
+          }
+          return noEqual
+        }
+        const maxNum = () => {
+          let maxNum = 1
+          for (let i = 0; i < this.storedLooks.length; ++i) {
+            let curName = parseInt(this.storedLooks[i].name, 10)
+            if (curName >= maxNum) maxNum = curName + 1
+          }
+          return maxNum
+        }
+        if (this.look.main !== 'empty' && noEquals(this.look, this.storedLooks)) {
+          let lookToStore = {}
+          lookToStore.name = maxNum()
+          lookToStore.look = JSON.parse(JSON.stringify(this.look))
+          this.storedLooks.push(lookToStore)
+          lookToStore = JSON.stringify(this.storedLooks)
+          window.localStorage.setItem('storedLooks', lookToStore)
         }
       },
 
@@ -99,7 +108,7 @@
       },
 
       loadLook: function (idx) {
-        this.look = JSON.parse(JSON.stringify(this['storedLooks'][idx]))
+        this.look = JSON.parse(JSON.stringify(this['storedLooks'][idx].look))
       },
 
       loadWardrobe: function () {
@@ -228,5 +237,9 @@
       left: initial;
     & img
       width 80px
+
+  .saved-looks
+    display inline-block
+    text-align center
 
 </style>
