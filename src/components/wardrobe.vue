@@ -4,11 +4,15 @@
     <template v-if="wardrobe.hasOwnProperty('top')">
       <p>Всего вещей: {{calcItems(wardrobe)}}, аксессуаров: {{calcItems(accessories)}}</p>
     </template>
-    <div>
-      <button class="btn btn-primary" v-on:click="loadWardrobe()" v-if="wardrobe === 'empty'">Загрузить гардероб
-      </button>
-    </div>
+    <button class="btn btn-primary" v-on:click="loadWardrobe()" v-if="wardrobe === 'empty'">Загрузить гардероб
+    </button>
     <template v-if="wardrobe.hasOwnProperty('top')">
+      <button-group :value.sync="weather" type="default">
+        <radio value="winter">Зима</radio>
+        <radio value="inter_season">Межсезонье</radio>
+        <radio value="summer">Лето</radio>
+      </button-group>
+      <button class="btn btn-link" v-on:click="weather = 'any'">< Без разницы</button>
       <button class="btn btn-primary" v-on:click="generateLook()">Создать образ</button>
       <button class="btn btn-default" v-on:click="saveLook()" v-if="look.main !== 'empty'">Сохранить</button>
     </template>
@@ -32,24 +36,26 @@
           <button type="button" class="btn btn-warning btn-sm" v-on:click="deleteLook($index)">✕</button>
         </div>
       </div>
-      <!--<button class="btn btn-default btn-sm" v-for="look in storedLooks" v-on:click="loadLook($index)">-->
-      <!--{{$index}}-->
-      <!--<a class="btn btn-default btn-xs">x</a>-->
-      <!--</button>-->
     </div>
-
   </div>
 </template>
 
 <script>
+  import {buttonGroup, radio} from 'vue-strap'
   export default {
 
     name: 'wardrobe',
+
+    components: {
+      'button-group': buttonGroup,
+      'radio': radio
+    },
 
     data: () => ({
       imgWidth: 150,
       msg: 'Гардероб!',
       wardrobe: 'empty',
+      weather: 'any',
       accessories: 'empty',
       look: {
         main: 'empty',
@@ -84,6 +90,9 @@
           }
           return noEqual
         }
+        /**
+         * Get maximal number for a list of stored looks
+         */
         const maxNum = () => {
           let maxNum = 1
           for (let i = 0; i < this.storedLooks.length; ++i) {
@@ -95,7 +104,7 @@
         if (this.look.main !== 'empty' && noEquals(this.look, this.storedLooks)) {
           let lookToStore = {}
           lookToStore.name = maxNum()
-          lookToStore.look = JSON.parse(JSON.stringify(this.look))
+          lookToStore.look = Object.assign({}, this.look)
           this.storedLooks.push(lookToStore)
           lookToStore = JSON.stringify(this.storedLooks)
           window.localStorage.setItem('storedLooks', lookToStore)
@@ -128,19 +137,56 @@
         }
       },
       generateLook: function () {
+        /**
+         * Filter wardrobe objects according to weather field values
+         * @param wardrobeObj
+         * @returns {{}}
+         */
+        const filterWardrobe = (wardrobeObj) => {
+          let filtered = {}
+          Object.getOwnPropertyNames(wardrobeObj).forEach(group => {
+            if (group !== '__ob__') {
+              filtered[group] = []
+              wardrobeObj[group].forEach(item => {
+                if (item.weather.indexOf(this.weather) > -1) {
+                  filtered[group].push(item['path'])
+                } else if (this.weather === 'any') {
+                  filtered[group].push(item['path'])
+                }
+              })
+              if (filtered[group].length < 1) {
+                delete filtered[group]
+              }
+            }
+          })
+          return filtered
+        }
         let tempLook = {}
-        Object.getOwnPropertyNames(this.wardrobe).forEach(val => {
-          if (val !== '__ob__') {
-            let index = Math.round(Math.random() * (this.wardrobe[val].length - 1))
-            tempLook[val] = this.wardrobe[val][index]
+        let filteredWardrobe = filterWardrobe(this.wardrobe)
+        let filteredAccessories = filterWardrobe(this.accessories)
+        /**
+         * Returns decision between two string inputs
+         * @param grp1 {string}
+         * @param grp2 {string}
+         * @returns {string}
+         */
+        const decideOppGroups = (grp1, grp2) => {
+          let decision = [grp1, grp2]
+          return decision[Math.round(Math.random())]
+        }
+        let excludeGroup = decideOppGroups('bottom', 'dress')
+        Object.getOwnPropertyNames(filteredWardrobe).forEach(val => {
+          if (val !== '__ob__' && val !== excludeGroup) {
+            let index = Math.round(Math.random() * (filteredWardrobe[val].length - 1))
+            tempLook[val] = filteredWardrobe[val][index]
           }
         })
         let accessories = {}
-        Object.getOwnPropertyNames(this.accessories).forEach(val => {
+        Object.getOwnPropertyNames(filteredAccessories).forEach(val => {
           let decide = Math.random() - 0.5
           if (decide > 0 && val !== '__ob__') {
-            let index = Math.round(Math.random() * (this.accessories[val].length - 1))
-            accessories[val] = this.accessories[val][index]
+            let index = Math.round(Math.random() * (filteredAccessories[val].length - 1))
+            accessories[val] = filteredAccessories[val][index]
           }
         })
         this.look.main = tempLook
