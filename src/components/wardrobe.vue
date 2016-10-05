@@ -150,7 +150,7 @@
               wardrobeObj[group].forEach(item => {
                 if (item.weather.indexOf(this.weather) > -1) {
                   filtered[group].push(item['path'])
-                } else if (this.weather === 'any') {
+                } else if (item.weather.indexOf('any') > -1) {
                   filtered[group].push(item['path'])
                 }
               })
