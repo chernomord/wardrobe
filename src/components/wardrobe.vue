@@ -1,4 +1,4 @@
-<template>
+<template xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
   <div class="hello">
     <h1>{{ msg }}</h1>
     <template v-if="wardrobe.hasOwnProperty('top')">
@@ -18,7 +18,7 @@
     </template>
     <div class="look">
       <div class="look__main" v-if="look.main !== 'empty'">
-        <div class="wardrobe-item" v-for="(key, item) in look.main" v-bind:class="getClass(key)">
+        <div class="wardrobe-item" v-for="(key, item) in look.main" v-bind:class="key">
           <img :src="'static/images/' + key + '/' + item" :width="imgWidth">
         </div>
       </div>
@@ -42,6 +42,8 @@
 
 <script>
   import {buttonGroup, radio} from 'vue-strap'
+  import store from '../wardrobe-store'
+  import looks from '../looks-store'
   export default {
 
     name: 'wardrobe',
@@ -65,55 +67,16 @@
     }),
 
     ready: function () {
-      let storedLooks = window.localStorage.getItem('storedLooks')
-      if (storedLooks) {
-        storedLooks = JSON.parse(storedLooks)
-        this.storedLooks = storedLooks
-      }
+      this.storedLooks = looks.get()
     },
 
     methods: {
       saveLook: function () {
-        /**
-         *
-         * @param look {Object}
-         * @param storedLooks {Array}
-         * @returns {boolean}
-         */
-        const noEquals = (look, storedLooks) => {
-          let noEqual = true
-          for (let i = 0; i < this.storedLooks.length; ++i) {
-            if (JSON.stringify(storedLooks[i].look) === JSON.stringify(look)) {
-              noEqual = false
-              break
-            }
-          }
-          return noEqual
-        }
-        /**
-         * Get maximal number for a list of stored looks
-         */
-        const maxNum = () => {
-          let maxNum = 1
-          for (let i = 0; i < this.storedLooks.length; ++i) {
-            let curName = parseInt(this.storedLooks[i].name, 10)
-            if (curName >= maxNum) maxNum = curName + 1
-          }
-          return maxNum
-        }
-        if (this.look.main !== 'empty' && noEquals(this.look, this.storedLooks)) {
-          let lookToStore = {}
-          lookToStore.name = maxNum()
-          lookToStore.look = Object.assign({}, this.look)
-          this.storedLooks.push(lookToStore)
-          lookToStore = JSON.stringify(this.storedLooks)
-          window.localStorage.setItem('storedLooks', lookToStore)
-        }
+        looks.add(this.look)
       },
 
       deleteLook: function (idx) {
-        this.storedLooks.splice(idx, 1)
-        window.localStorage.setItem('storedLooks', JSON.stringify(this.storedLooks))
+        looks.delete(idx)
       },
 
       loadLook: function (idx) {
@@ -121,76 +84,14 @@
       },
 
       loadWardrobe: function () {
-        let x = new XMLHttpRequest()
-        x.open('GET', 'static/wardrobe.json', true)
-        x.send()
-        x.onreadystatechange = () => { // (3)
-          if (x.readyState !== 4) return
-          if (x.status !== 200) {
-            console.debug(x.status + ': ' + x.statusText) // исключение
-          } else {
-            let data = JSON.parse(x.responseText)
-            this.accessories = data.accessories
-            delete data.accessories
-            this.wardrobe = data
-          }
-        }
+        store.loadWardrobe().then(
+          result => {
+            this.wardrobe = result.wardrobe
+            this.accessories = result.accessories
+          })
       },
       generateLook: function () {
-        /**
-         * Filter wardrobe objects according to weather field values
-         * @param wardrobeObj
-         * @returns {{}}
-         */
-        const filterWardrobe = (wardrobeObj) => {
-          let filtered = {}
-          Object.getOwnPropertyNames(wardrobeObj).forEach(group => {
-            if (group !== '__ob__') {
-              filtered[group] = []
-              wardrobeObj[group].forEach(item => {
-                if (item.weather.indexOf(this.weather) > -1) {
-                  filtered[group].push(item['path'])
-                } else if (item.weather.indexOf('any') > -1) {
-                  filtered[group].push(item['path'])
-                }
-              })
-              if (filtered[group].length < 1) {
-                delete filtered[group]
-              }
-            }
-          })
-          return filtered
-        }
-        let tempLook = {}
-        let filteredWardrobe = filterWardrobe(this.wardrobe)
-        let filteredAccessories = filterWardrobe(this.accessories)
-        /**
-         * Returns decision between two string inputs
-         * @param grp1 {string}
-         * @param grp2 {string}
-         * @returns {string}
-         */
-        const decideOppGroups = (grp1, grp2) => {
-          let decision = [grp1, grp2]
-          return decision[Math.round(Math.random())]
-        }
-        let excludeGroup = decideOppGroups('bottom', 'dress')
-        Object.getOwnPropertyNames(filteredWardrobe).forEach(val => {
-          if (val !== '__ob__' && val !== excludeGroup) {
-            let index = Math.round(Math.random() * (filteredWardrobe[val].length - 1))
-            tempLook[val] = filteredWardrobe[val][index]
-          }
-        })
-        let accessories = {}
-        Object.getOwnPropertyNames(filteredAccessories).forEach(val => {
-          let decide = Math.random() - 0.5
-          if (decide > 0 && val !== '__ob__') {
-            let index = Math.round(Math.random() * (filteredAccessories[val].length - 1))
-            accessories[val] = filteredAccessories[val][index]
-          }
-        })
-        this.look.main = tempLook
-        this.look.accessories = accessories
+        this.look = store.generateLook(this.wardrobe, this.accessories, this.weather)
       },
       /**
        * Calculate total items in arrays of dictionary properties
@@ -205,12 +106,7 @@
           })
         }
         return total
-      },
-      /**
-       * Return name of the class
-       * @param name {string}
-       */
-      getClass: name => (name)
+      }
     },
 
     created: function () {
