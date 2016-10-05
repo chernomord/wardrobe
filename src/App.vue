@@ -1,15 +1,30 @@
 <template>
   <div id="app">
-    <wardrobe></wardrobe>
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li>
+            <router-link to="/look">Образ</router-link>
+          </li>
+          <li>
+            <router-link to="/wardrobe">Гардероб</router-link>
+          </li>
+        </ul>
+        </div>
+      </div>
+    </nav>
+    <router-view/>
+
   </div>
 </template>
 
 <script>
-  import wardrobe from './components/wardrobe'
+  import look from './components/look'
 
   export default {
     components: {
-      wardrobe
+      look
     }
   }
 </script>
@@ -32,6 +47,8 @@
     max-width: 1200px;
     font-family: Source Sans Pro, Helvetica, sans-serif;
     text-align: center;
+    margin: 0 auto;
+    width: 100%;
   }
 
   #app a {
@@ -39,8 +56,4 @@
     text-decoration: none;
   }
 
-  .logo {
-    width: 100px;
-    height: 100px
-  }
 </style>

@@ -7,6 +7,12 @@
     <button class="btn btn-primary" v-on:click="loadWardrobe()" v-if="wardrobe === 'empty'">Загрузить гардероб
     </button>
     <template v-if="wardrobe.hasOwnProperty('top')">
+      <input type="radio" id="winter" value="winter" v-model="weather">
+      <label for="winter">Зима</label>
+      <input type="radio" id="inter_season" value="inter_season" v-model="weather">
+      <label for="inter_season">Межсезонье</label>
+      <input type="radio" id="summer" value="summer" v-model="weather">
+      <label for="summer">Лето</label>
       <button class="btn btn-link" v-on:click="weather = 'any'"> -- Без разницы</button>
       <button class="btn btn-primary" v-on:click="generateLook()">Создать образ</button>
       <button class="btn btn-default" v-on:click="saveLook()" v-if="look.main !== 'empty'">Сохранить</button>
