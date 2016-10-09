@@ -56,4 +56,8 @@
     text-decoration: none;
   }
 
+  .router-link-active {
+    background-color: rgba(205, 236, 216, 0.82) !important;
+  }
+
 </style>

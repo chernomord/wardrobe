@@ -1,6 +1,6 @@
 <template xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
   <div class="hello">
-    <h1>{{ msg }}</h1>
+    <h1>Образ</h1>
     <template v-if="wardrobe.hasOwnProperty('top')">
       <p>Всего вещей: {{calcItems(wardrobe)}}, аксессуаров: {{calcItems(accessories)}}</p>
     </template>
@@ -48,7 +48,7 @@
 //  import buttonGroup from '../strap/buttonGroup.vue'
   export default {
 
-    name: 'wardrobe',
+    name: 'look',
 
 //    components: {
 //      'button-group': buttonGroup,
