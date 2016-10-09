@@ -1,5 +1,5 @@
-import { Promise } from 'es6-promise'
-
+import {Promise} from 'es6-promise'
+import pica from './pica'
 const fsStore = {}
 export default fsStore
 
@@ -14,27 +14,35 @@ const loadWD = () => (JSON.parse(window.localStorage.getItem('wd_fs')))
  * @returns {Promise}
  */
 const resize = src => (
-  new Promise((resolve) => {
+  new Promise((resolve, reject) => {
     let MAX_HEIGHT = 500
     const image = new Image()
+    image.src = src
+    let canvas = document.createElement('canvas')
     image.onload = () => {
-      let canvas = document.createElement('canvas')
       if (image.height > MAX_HEIGHT) {
         image.width *= MAX_HEIGHT / image.height
         image.height = MAX_HEIGHT
       }
-      let ctx = canvas.getContext('2d')
-      // ctx.mozImageSmoothingEnabled = true
-      // ctx.webkitImageSmoothingEnabled = true
-      // ctx.msImageSmoothingEnabled = true
-      ctx.imageSmoothingEnabled = true
-      // ctx.clearRect(0, 0, canvas.width, canvas.height)
       canvas.width = image.width
       canvas.height = image.height
-      ctx.drawImage(image, 0, 0, image.width, image.height)
-      canvas.toBlob(blob => {
-        resolve(blob)
-      }, 'image/jpeg', 0.90)
+      pica.resizeCanvas(image, canvas, {
+        quality: 2,
+        alpha: true,
+        unsharpAmount: 50,
+        unsharpRadius: 0.51,
+        unsharpThreshold: 75,
+        transferable: true
+      }, err => {
+        if (err) {
+          console.log(err)
+          reject(err)
+          return
+        }
+        canvas.toBlob(blob => {
+          resolve(blob)
+        }, 'image/jpeg', 0.90)
+      })
     }
     image.src = src
   })
@@ -62,8 +70,41 @@ fsStore.init = () => (
   })
 )
 fsStore.getAllItems = () => {
-  return Object.assign({}, WARDROBE)
+  return WARDROBE.slice(0)
 }
+
+fsStore.delete = (uid) => (
+  new Promise((resolve, reject) => {
+    if (_fs) {
+      _fs.root.getFile(uid, {create: false}, fileEntry => {
+        fileEntry.remove(() => {
+          let found = false
+          for (let i = 0; i < WARDROBE.length; ++i) {
+            if (WARDROBE[i].uid === uid) {
+              console.log(WARDROBE[i].uid, uid)
+              WARDROBE.splice(i, 1)
+              found = true
+              saveWD()
+              resolve(fsStore.getAllItems())
+            }
+          }
+          if (!found) reject(new Error('Нарушена целостность данных!'))
+          console.log('File removed.')
+        }, error => {
+          reject(new Error('Не получилось удалить фотографию...' + error.message))
+        })
+      }, () => {
+        reject(new Error('Рассеянный стал, файл потерял по пути. Повтори будь ласка!'))
+      })
+    } else {
+      fsStore.init().then(() => {
+        fsStore.delete(uid)
+      }, error => {
+        reject(new Error('Попробуй еще раз, но в Google Chrome' + error.message))
+      })
+    }
+  })
+)
 
 /**
  * Adding file to local filesystem from File input
@@ -78,17 +119,25 @@ fsStore.add = (file, season, type, name = null) => (
     let url = null
     // validate data
     if (!file) {
-      reject('Картиночку не забываем, пожалуйста')
+      reject(new Error('Картиночку не забываем, пожалуйста'))
       return
     }
     if (!type) {
-      reject('А что за вещичка? Тип подскажи')
+      reject(new Error('А что за вещичка? Пальтишко али сапожки?'))
       return
     }
     if (!name) name = file.name
     if (file.size > megabytes(12)) {
-      reject('Мне бы файл поменьше, подавился я. Дай на 11 мегабайт хотя бы, а?')
+      reject(new Error('Мне бы файл поменьше, поперхнулся я. Дай на 11 мегабайт хотя бы, а?'))
       return
+    }
+    // Проверка на уникальность
+    for (let i = 0; i < WARDROBE.length; ++i) {
+      console.log(WARDROBE[i].uid)
+      if (WARDROBE[i].uid === file.name) {
+        reject(new Error('Такая вещичка уже есть!'))
+        return
+      }
     }
     if (_fs) {
       _fs.root.getFile(name, {create: true, exclusive: false}, fileEntry => {
@@ -101,6 +150,7 @@ fsStore.add = (file, season, type, name = null) => (
             })
             url = fileEntry.toURL()
             WARDROBE.push({
+              uid: name,
               fileURL: url,
               season: season,
               type: type
@@ -109,7 +159,7 @@ fsStore.add = (file, season, type, name = null) => (
             resolve(url)
           }
           fileWriter.onerror = e => {
-            reject('Что-то пошло совсем не по плану... ' + e.toString())
+            reject(new Error('Что-то пошло совсем не по плану... ' + e.toString()))
           }
           let fr = new FileReader()
           fr.onload = e => {
@@ -122,13 +172,13 @@ fsStore.add = (file, season, type, name = null) => (
           fr.readAsDataURL(file)
         })
       }, () => {
-        reject('Рассеянный стал, файл потерял по пути. Повтори будь ласка!')
+        reject(new Error('Рассеянный стал, файл потерял по пути. Повтори будь ласка!'))
       })
     } else {
       fsStore.init().then(() => {
         fsStore.add(file, season, type, name)
       }, error => {
-        reject(error)
+        reject(new Error('Попробуй еще раз, но в Google Chrome. ' + error.toString()))
       })
     }
   })

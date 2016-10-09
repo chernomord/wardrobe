@@ -1,55 +1,60 @@
-<template xmlns:v-on="http://www.w3.org/1999/xhtml">
-  <div class="container">
-    <form class="form-inline">
-      <div class="form-group">
-        <label for="exampleInputFile">Файл изображения</label>
-        <input type="file" id="exampleInputFile" accept=".jpg,.png,.jpeg" v-on:change="fileOnChange">
-        <p class="help-block">Допустимый размер файла не более 1Мб</p>
-        <img :src="previewSRC" height="100">
-      </div>
-      <div class="row">
-        <div class="col col-md-6">
-          <h3>Тип вещи: {{itemTypeCurrent.name}}</h3>
+<template xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+  <section>
+    <div class="jumbotron jumbotron-fluid">
+      <div class="raw"><h1>Гардероб</h1></div>
+      <form class="form">
+        <div class="form-group">
+          <label class="custom-file">
+            <input type="file" id="file" class="custom-file-input" accept=".jpg,.png,.jpeg" v-on:change="fileOnChange">
+            <span class="custom-file-control" v-bind:class="{'chosen': imageFile.name}"></span>
+          </label>
+          <p class="help-block" v-if="imageFile.name">Выбран файл: {{ imageFile.name }}</p>
+          <img :src="previewSRC" height="100" v-if="previewSRC">
+        </div>
+        <div class="form-group">
+          <!--<p>Тип вещи: {{itemTypeCurrent.name}}</p>-->
+          <select class="custom-select" v-model.lazy="itemTypeCurrent">
+            <option :value="type" v-for="type in itemTypes">{{ type.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Cезон: </label>
           <div class="form-group">
-            <label class="radio-inline" v-for="type in itemTypes">
-              <input type="radio" name="itemType" :value="type" v-model="itemTypeCurrent"> {{ type.name }}
+            <label class="custom-control custom-checkbox" v-for="season in seasons">
+              <input type="checkbox" class="custom-control-input" name="season" :value="season"
+                     v-model="seasonsCurrent">
+              <span class="custom-control-indicator"></span>
+              <span class="custom-control-description">{{ season.name }}</span>
             </label>
           </div>
         </div>
-        <div class="col col-md-6">
-          <h3>Cезон: {{seasonsCurrent.name}}</h3>
-          <div class="form-group">
-            <label class="radio-inline" v-for="season in seasons">
-              <input type="checkbox" name="season" :value="season" v-model="seasonsCurrent"> {{ season.name }}
-            </label>
-          </div>
+        <div class="form-group">
+          <button type="button" class="btn btn-primary"
+                  v-on:click="submit()" v-bind:disabled="validation.upload">Сохранить
+          </button>
         </div>
-      </div>
-      <button type="button" class="btn btn-default" v-on:click="submit()">Submit</button>
-      <div class="alert alert-success" v-if="upload.status === 'success'">{{upload.message}}</div>
-      <div class="alert alert-danger" v-if="upload.status === 'fail'">{{upload.message}}</div>
-    </form>
-    <hr>
-    <div class="row">
-      <div class="col-sm-4 col-md-3" v-for="item in wardrobe">
-        <div class="thumbnail">
-          <img :src="item.fileURL" alt="..." class="img-rounded">
-          <div class="caption">
-            <p>Тип: {{item.type.name}}</p>
-            <p>Сезон: <span v-for="season in item.season">{{season.name}}, </span></p>
-          </div>
+        <div class="alert alert-success" v-if="upload.status === 'success'">{{upload.message}}</div>
+        <div class="alert alert-danger" v-if="upload.status === 'fail'">{{upload.message}}</div>
+      </form>
+    </div>
+    <!-- Гардероб -->
+    <div class="container" v-for="type in typesPresentInWardrobe()">
+      <hr>
+      <h4 class=" text-md-left">{{ type.name }}</h4>
+      <div class="wardrobe-items">
+        <div class="item" v-for="item in containsTypeVal(wardrobe, type)">
+          <img class="item-img" :src="item.fileURL" v-bind:alt="item.name" nopin="nopin">
+          <button class="item-close" v-on:click="remove(item.uid)">×</button>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script>
-//  import Vue from 'vue'
+  //  import Vue from 'vue'
   import fsStore from '../../wardrobe-store-fs'
-  import pica from '../pica'
-//  const pica = require('pica')
-  console.log('DFSDFS', pica)
+  //  const pica = require('pica')
   export default {
 
     name: 'itemUpload',
@@ -66,7 +71,6 @@
         console.dir(this.imageFile)
       },
       submit: function () {
-//        console.log(pica)
         fsStore.add(this.imageFile, this.seasonsCurrent, this.itemTypeCurrent).then(url => {
           this.upload.status = 'success'
           this.upload.message = 'Получилось!'
@@ -74,15 +78,47 @@
           this.wardrobe = fsStore.getAllItems()
         }).catch(error => {
           this.upload.status = 'fail'
-          this.upload.message = error
-          console.log(error)
+          this.upload.message = error.message
+          console.dir(error)
         })
+      },
+      remove: function (uid) {
+        fsStore.delete(uid).then(updated => {
+          this.wardrobe = updated
+        }).catch(error => {
+          this.upload.status = 'fail'
+          this.upload.message = error.message
+          console.dir(error)
+        })
+      },
+      containsTypeVal: function (list, type) {
+        return list.filter(item => {
+          if (item.type.value === type.value) return item
+        })
+      },
+      typesPresentInWardrobe: function () {
+        return this.itemTypes.filter(type => {
+          for (let i = 0; i < this.wardrobe.length; ++i) {
+            if (this.wardrobe[i].type.value === type.value) {
+              return type
+            }
+          }
+        })
+      }
+    },
+
+    computed: {
+      validation: function () {
+        return {
+          upload: !(this.imageFile !== '' && this.itemTypeCurrent.value !== '' && this.seasonsCurrent.length > 0)
+        }
       }
     },
 
     data: () => ({
 
-      itemTypes: [{name: 'Сумка', value: 'bag'},
+      itemTypes: [{name: 'Тип одежды...', value: ''},
+        {name: 'Сумка', value: 'bag'},
         {name: 'На голову', value: 'hat'},
         {name: 'Шарфик', value: 'scarf'},
         {name: 'Жилетка', value: 'waistcoat'},
@@ -94,7 +130,7 @@
         {name: 'Плащь', value: 'coat'},
         {name: 'Свитер', value: 'sweater'}],
 
-      itemTypeCurrent: '',
+      itemTypeCurrent: {name: 'Тип одежды...', value: ''},
 
       seasons: [{name: 'лето', value: 'summer'},
         {name: 'зима', value: 'winter'},
@@ -112,7 +148,7 @@
         message: ''
       },
 
-      wardrobe: ''
+      wardrobe: []
 
     })
 
@@ -120,5 +156,57 @@
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
+  .custom-file-control:lang(ru)
+    &:before
+      content: "Выбрать"
+    &:after
+      content: "Нужно фото..."
+      position: absolute
+      left 1em
 
+  .custom-file-control.chosen:lang(ru)
+    &:after
+      content "Есть фото!"
+
+  .custom-select
+    line-height 1.2em
+    cursor pointer
+
+  .wardrobe-items
+    display flex
+    flex-wrap wrap
+    .item
+      position relative
+      width 10%
+      &:hover > .item-close
+        opacity 1
+      &:hover > .item-img
+        opacity .4
+      &-close
+        opacity 0
+        position absolute
+        right 10px
+        top 10px
+        font-size 2em
+        background: #d63d30;
+        line-height: 0.6em;
+        vertical-align: middle;
+        text-align: center;
+        padding: 4px;
+        color: white;
+        border 0
+        border-radius: 4px;
+        transition: opacity .2s ease
+        &:hover
+          text-decoration none
+    .item-img
+      width 100%
+      transition: opacity .2s ease
+      display block
+      position relative
+
+  .card-columns
+    column-count 6
+    .card
+      break-inside avoid
 </style>

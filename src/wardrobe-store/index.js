@@ -1,4 +1,5 @@
 import { Promise } from 'es6-promise'
+import fsStore from '../wardrobe-store-fs'
 
 const store = {}
 const items = {
@@ -12,21 +13,25 @@ const items = {
  */
 store.loadWardrobe = function () {
   return new Promise(function (resolve, reject) {
-    let request = new XMLHttpRequest()
-    request.open('GET', 'static/wardrobe.json', true)
-    request.onreadystatechange = () => { // (3)
-      if (request.readyState !== 4) return
-      if (request.status === 200) {
-        let data = JSON.parse(request.responseText)
-        items.accessories = data.accessories
-        delete data.accessories
-        items.wardrobe = data
-        resolve(items)
-      } else {
-        reject(Error('Data didn\'t load successfully; error code:' + request.statusText))
+    let rawData = fsStore.getAllItems()
+    // lets sort it out
+    rawData.forEach(item => {
+      switch (item.type.value) {
+      case 'bag':
+      case 'scarf':
+      case 'waistcoat':
+      case 'hat':
+        if (!items.accessories.hasOwnProperty(item.type.value)) items.accessories[item.type.value] = []
+        items.accessories[item.type.value].push(item)
+        break
+      default:
+        if (!items.wardrobe.hasOwnProperty(item.type.value)) items.wardrobe[item.type.value] = []
+        items.wardrobe[item.type.value].push(item)
+        break
       }
-    }
-    request.send()
+    })
+    console.log(items)
+    resolve(items)
   })
 }
 
@@ -50,9 +55,14 @@ store.generateLook = function (wardrobe, accessories, weather) {
         filtered[group] = []
         wardrobeObj[group].forEach(item => {
           if (weather === 'any') {
-            filtered[group].push(item['path'])
-          } else if (item.weather.indexOf(weather) > -1 || item.weather.indexOf('any') > -1) {
-            filtered[group].push(item['path'])
+            filtered[group].push(item)
+          } else {
+            for (let i = 0; i < item.season.length; ++i) {
+              if (item.season[i].value === weather) {
+                filtered[group].push(item)
+                break
+              }
+            }
           }
         })
         if (filtered[group].length < 1) {
@@ -60,6 +70,7 @@ store.generateLook = function (wardrobe, accessories, weather) {
         }
       }
     })
+    console.log(filtered)
     return filtered
   }
   /**

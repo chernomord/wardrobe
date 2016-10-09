@@ -1,5 +1,6 @@
 <template xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
-  <div class="hello">
+  <div>
+    <div class="jumbotron jumbotron-fluid">
     <h1>Образ</h1>
     <template v-if="wardrobe.hasOwnProperty('top')">
       <p>Всего вещей: {{calcItems(wardrobe)}}, аксессуаров: {{calcItems(accessories)}}</p>
@@ -17,19 +18,20 @@
       <button class="btn btn-primary" v-on:click="generateLook()">Создать образ</button>
       <button class="btn btn-default" v-on:click="saveLook()" v-if="look.main !== 'empty'">Сохранить</button>
     </template>
+      </div>
     <div class="look">
       <div class="look__main" v-if="look.main !== 'empty'">
         <div class="wardrobe-item" v-for="(item, key) in look.main" v-bind:class="key">
-          <img :src="'static/images/' + key + '/' + item" :width="imgWidth">
+          <img :src="item.fileURL" :width="imgWidth">
         </div>
       </div>
       <div class="look__accessories" v-if="look.accessories !== 'empty'">
         <div class="wardrobe-item" v-for="(item, key) in look.accessories">
-          <img :src="'static/images/accessories/' + key + '/' + item" :width="imgWidth">
+          <img :src="item.fileURL" :width="imgWidth">
         </div>
       </div>
     </div>
-    <div>
+    <div v-if="storedLooks.length > 0">
       <h3>Сохраненные образы</h3>
       <div class="btn-toolbar saved-looks" style="text-align:center;">
         <div class="btn-group" role="group" v-for="(look, index) in storedLooks">
@@ -44,6 +46,8 @@
 <script>
   import store from '../wardrobe-store'
   import looks from '../looks-store'
+  import fsStore from '../wardrobe-store-fs'
+  console.log(fsStore)
 //  import radio from '../strap/Radio.vue'
 //  import buttonGroup from '../strap/buttonGroup.vue'
   export default {
@@ -126,8 +130,8 @@
   $main-top-offset = 20px
   $main-bot-offset = 220px
 
-  h1
-    color: #42b983;
+  /*h1*/
+    /*color: #42b983;*/
 
   .list td
     &:first-of-type

@@ -1,17 +1,9 @@
 <template>
   <div id="app">
-    <nav class="navbar navbar-default">
-      <div class="container-fluid">
-        <div class="collapse navbar-collapse">
-        <ul class="nav navbar-nav">
-          <li>
-            <router-link to="/look">Образ</router-link>
-          </li>
-          <li>
-            <router-link to="/wardrobe">Гардероб</router-link>
-          </li>
-        </ul>
-        </div>
+    <nav class="navbar navbar-dark bg-inverse">
+      <div class="nav navbar-nav">
+        <router-link class="nav-item nav-link" to="/look">Образ</router-link>
+        <router-link class="nav-item nav-link" to="/wardrobe">Гардероб</router-link>
       </div>
     </nav>
     <router-view/>
@@ -51,13 +43,13 @@
     width: 100%;
   }
 
-  #app a {
-    color: #42b983;
-    text-decoration: none;
-  }
+  /*#app a {*/
+    /*color: #42b983;*/
+    /*text-decoration: none;*/
+  /*}*/
 
   .router-link-active {
-    background-color: rgba(205, 236, 216, 0.82) !important;
+    color: #fff !important;
   }
 
 </style>
