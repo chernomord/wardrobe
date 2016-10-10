@@ -1,15 +1,22 @@
 <template xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
-
+  <section>
     <item-upload></item-upload>
-
+    <div class="container">
+    <hr>
+    <div class="alert alert-warning" role="alert">
+      <strong>Обрати внимание!</strong> Все загруженные фотографии хранятся локально на твоем компьютере именно в этом
+      браузере. Никакие файлы никуда не отправляются и не синхронизируются. Поэтому пожалуйста, после загрузки не удаляй
+      фотографии со своего
+      компьютера.
+    </div>
+    </div>
+  </section>
 </template>
 
 <script>
   import itemUpload from 'wardrobe/item-upload.vue'
-//  import store from '../wardrobe-store'
-//  import looks from '../looks-store'
-//  import radio from '../strap/Radio.vue'
-//  import buttonGroup from '../strap/buttonGroup.vue'
+  //  import store from '../wardrobe-store'
+  //  import looks from '../looks-store'
   export default {
 
     name: 'wardrobe',
@@ -19,14 +26,12 @@
 //      'radio': radio
     },
 
-    data: () => ({
-    }),
+    data: () => ({}),
 
     mounted: function () {
     },
 
-    methods: {
-    },
+    methods: {},
 
     created: function () {
 

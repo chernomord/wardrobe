@@ -2,12 +2,11 @@
   <div>
     <div class="jumbotron jumbotron-fluid">
     <h1>Образ</h1>
-    <template v-if="wardrobe.hasOwnProperty('top')">
+    <p v-if="!canCreateLook">Для создания образа необходимо загрузить по крайней мере две вещи. Для этого нужно перейти в раздел <router-link to="/wardrobe">Гардероб</router-link></p>
+    <template v-if="canCreateLook">
       <p>Всего вещей: {{calcItems(wardrobe)}}, аксессуаров: {{calcItems(accessories)}}</p>
     </template>
-    <button class="btn btn-primary" v-on:click="loadWardrobe()" v-if="wardrobe === 'empty'">Загрузить гардероб
-    </button>
-    <template v-if="wardrobe.hasOwnProperty('top')">
+    <template v-if="canCreateLook">
       <input type="radio" id="winter" value="winter" v-model="weather">
       <label for="winter">Зима</label>
       <input type="radio" id="inter_season" value="inter_season" v-model="weather">
@@ -72,8 +71,19 @@
       storedLooks: []
     }),
 
+    computed: {
+      canCreateLook: function () {
+        return Object.keys(this.wardrobe).length + Object.keys(this.accessories).length > 1
+      }
+    },
+
     mounted: function () {
       this.storedLooks = looks.get()
+      store.loadWardrobe().then(
+        result => {
+          this.wardrobe = result.wardrobe
+          this.accessories = result.accessories
+        })
     },
 
     methods: {
@@ -115,10 +125,6 @@
         }
         return total
       }
-    },
-
-    created: function () {
-
     }
 
   }

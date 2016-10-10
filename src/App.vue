@@ -2,11 +2,14 @@
   <div id="app">
     <nav class="navbar navbar-dark bg-inverse">
       <div class="nav navbar-nav">
+        <router-link class="nav-item nav-link" to="/about">О приложении</router-link>
         <router-link class="nav-item nav-link" to="/look">Образ</router-link>
         <router-link class="nav-item nav-link" to="/wardrobe">Гардероб</router-link>
       </div>
     </nav>
     <router-view/>
+    <hr>
+    <p class="text-xs-small"><small>&#9400; Wardrobe Inc. 2016</small></p>
 
   </div>
 </template>
@@ -34,9 +37,9 @@
   }
 
   #app {
-    color: #2c3e50;
+    /*color: #2c3e50;*/
     /*margin-top: -100px;*/
-    max-width: 1200px;
+    /*max-width: 1200px;*/
     font-family: Source Sans Pro, Helvetica, sans-serif;
     text-align: center;
     margin: 0 auto;

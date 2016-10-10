@@ -1,7 +1,7 @@
 <template xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
   <section>
-    <div class="jumbotron jumbotron-fluid">
-      <div class="raw"><h1>Гардероб</h1></div>
+    <div class="jumbotron jumbotron-fluid p-b-1">
+      <div class="raw"><h2>Добавить вещь в гардероб</h2></div>
       <form class="form">
         <div class="form-group">
           <label class="custom-file">
@@ -12,21 +12,20 @@
           <img :src="previewSRC" height="100" v-if="previewSRC">
         </div>
         <div class="form-group">
-          <!--<p>Тип вещи: {{itemTypeCurrent.name}}</p>-->
           <select class="custom-select" v-model.lazy="itemTypeCurrent">
             <option :value="type" v-for="type in itemTypes">{{ type.name }}</option>
           </select>
         </div>
         <div class="form-group">
           <label>Cезон: </label>
-          <div class="form-group">
+
             <label class="custom-control custom-checkbox" v-for="season in seasons">
               <input type="checkbox" class="custom-control-input" name="season" :value="season"
                      v-model="seasonsCurrent">
               <span class="custom-control-indicator"></span>
               <span class="custom-control-description">{{ season.name }}</span>
             </label>
-          </div>
+
         </div>
         <div class="form-group">
           <button type="button" class="btn btn-primary"
@@ -39,11 +38,12 @@
     </div>
     <!-- Гардероб -->
     <div class="container" v-for="type in typesPresentInWardrobe()">
+      <h2>Гардероб</h2>
       <hr>
       <h4 class=" text-md-left">{{ type.name }}</h4>
       <div class="wardrobe-items">
         <div class="item" v-for="item in containsTypeVal(wardrobe, type)">
-          <img class="item-img" :src="item.fileURL" v-bind:alt="item.name" nopin="nopin">
+          <img class="item-img" :src="item.fileURL" :alt="item.uid" nopin="nopin">
           <button class="item-close" v-on:click="remove(item.uid)">×</button>
         </div>
       </div>
