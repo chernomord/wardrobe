@@ -81,6 +81,7 @@
       this.storedLooks = looks.get()
       store.loadWardrobe().then(
         result => {
+          console.log(result)
           this.wardrobe = result.wardrobe
           this.accessories = result.accessories
         })

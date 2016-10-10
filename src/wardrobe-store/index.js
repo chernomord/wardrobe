@@ -3,8 +3,8 @@ import fsStore from '../wardrobe-store-fs'
 
 const store = {}
 const items = {
-  wardrobe: [],
-  accessories: []
+  wardrobe: {},
+  accessories: {}
 }
 
 /**
@@ -13,9 +13,10 @@ const items = {
  */
 store.loadWardrobe = function () {
   return new Promise(function (resolve, reject) {
-    items.wardrobe = []
-    items.accessories = []
+    items.wardrobe = {}
+    items.accessories = {}
     let rawData = fsStore.getAllItems()
+    console.log(rawData)
     // lets sort it out
     rawData.forEach(item => {
       switch (item.type.value) {
@@ -32,7 +33,7 @@ store.loadWardrobe = function () {
         break
       }
     })
-    console.log(items)
+    // console.log('items', items)
     resolve(items)
   })
 }

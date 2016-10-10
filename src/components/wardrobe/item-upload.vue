@@ -37,8 +37,8 @@
       </form>
     </div>
     <!-- Гардероб -->
+    <h2>Гардероб</h2>
     <div class="container" v-for="type in typesPresentInWardrobe()">
-      <h2>Гардероб</h2>
       <hr>
       <h4 class=" text-md-left">{{ type.name }}</h4>
       <div class="wardrobe-items">

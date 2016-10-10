@@ -10,7 +10,6 @@
     <router-view/>
     <hr>
     <p class="text-xs-small"><small>&#9400; Wardrobe Inc. 2016</small></p>
-
   </div>
 </template>
 
